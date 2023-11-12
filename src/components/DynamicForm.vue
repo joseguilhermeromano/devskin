@@ -73,6 +73,8 @@
 import { defineComponent, ref, Ref} from 'vue';
 
 const stepperRef = ref<Ref | null>(null);
+const step1Ref = ref<Ref | null>(null);
+const step2Ref = ref<Ref | null>(null);
 const step = ref<number>(1);
 const step1 = ref<string>('');
 const step2 = ref<string>('');
@@ -152,7 +154,7 @@ export default defineComponent({
       return [
         (v:string) => !/^[a-zA-Z\s]+$/.test(removeAccents(v)) ? 'O nome deve conter apenas letras e espaços.' : true,
         (v:string) => v.length < 2 ? 'Nome inválido. É necessário ao menos 3 letras.' : true,
-        (v:string) => (v.split(/\s+|,\s*/)).length >= 2  ? true : 'É necessário ao menos um sobrenome.',
+        (v:string) => ((v.split(/\s+|,\s*/)).filter(Boolean)).length >= 2  ? true : 'É necessário ao menos um sobrenome.',
         
       ]
     }, 
@@ -162,12 +164,6 @@ export default defineComponent({
       ]
     }
   },
-  methods: {
-    validateField(refObj: ref<any>(null)){
-      const fieldRef = this.$refs[refOb];
-      if (fieldRef) fieldRef.validate();
-    }
-  }
 });
 </script>
 
