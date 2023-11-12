@@ -4,7 +4,11 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/DevskinLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    children: [
+      { path: '', component: () => import('pages/IndexPage.vue') },
+      { path: '/inicio', component: () => import('pages/IndexPage2.vue') },
+      { path: '/formulario', component: () => import('pages/DynamicForm.vue') },
+    ],
   },
 
   // Always leave this as last one,

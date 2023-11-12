@@ -22,13 +22,6 @@
 
         <q-space />
 
-        <div class="YL__toolbar-input-container row no-wrap">
-          <q-input dense outlined square v-model="search" placeholder="Buscar" class="bg-white col" />
-          <q-btn class="YL__toolbar-input-btn" color="grey-3" text-color="grey-8" icon="search" unelevated />
-        </div>
-
-        <q-space />
-
         <div class="q-gutter-sm row items-center no-wrap">
           <q-btn round flat>
             <q-avatar size="26px">
@@ -49,7 +42,7 @@
     >
       <q-scroll-area class="fit">
         <q-list padding>
-          <q-item v-for="link in links1" :key="link.text" v-ripple clickable>
+          <q-item v-for="link in links1" :key="link.text" v-ripple clickable :to="link.to" active-class="item-ativo">
             <q-item-section avatar>
               <q-icon color="grey" :name="link.icon" />
             </q-item-section>
@@ -115,9 +108,9 @@ export default {
       toggleLeftDrawer,
 
       links1: [
-        { icon: 'home', text: 'Início' },
+        { icon: 'home', text: 'Início', to: '/inicio' },
         { icon: 'list', text: 'Tarefas' },
-        { icon: 'dynamic_form', text: 'Formulário Dinâmico' },
+        { icon: 'dynamic_form', text: 'Formulário Dinâmico', to:'/formulario'},
         { icon: 'apps', text: 'Postagens' },
         { icon: 'message', text: 'Comentarios' },
       ],
@@ -131,6 +124,18 @@ export default {
 </script>
 
 <style lang="sass">
+h4
+  text-decoration: underline
+  text-decoration-color: red
+  color: grey
+
+.item-ativo
+  color: red
+
+.q-item
+  &:hover
+    color: red
+
 .YL
 
   &__toolbar-input-container
@@ -153,4 +158,5 @@ export default {
 
     &:hover
       color: #000
+
 </style>
