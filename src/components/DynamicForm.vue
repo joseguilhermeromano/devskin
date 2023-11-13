@@ -1,5 +1,4 @@
 <template>
-  <AlertMessage ref="errorRef"/>
   <h4><q-icon :name="icon" color="red"/>{{ title }}</h4>
   <div id="dynamicForm">
    <q-stepper
@@ -86,11 +85,30 @@
         title="Formação"
         :done="step > 3"
       >
+      <q-form ref="formStep3" id="formStep3">
         <q-input
-          ref="step3Ref"
-          v-model="step3"
-          label="Anything - no rules"
+          v-model="instituicao"
+          label="Instituição"
+          :rules="school"
         />
+        <q-input
+          v-model="curso"
+          label="Curso"
+          :rules="course"
+        />
+        <q-input
+          v-model="dataInicio"
+          label="Início"
+          mask="##/##/####"
+          :rules="validateDateIni"
+        />
+        <q-input
+          v-model="dataFinal"
+          label="Final"
+          mask="##/##/####"
+          :rules="validateDateFim"
+        />
+      </q-form>
       </q-step>
 
       <template v-slot:navigation >
@@ -101,6 +119,7 @@
       </template>
     </q-stepper>
   </div>
+  <AlertMessage ref="msgRef"/>
 </template>
 
 <script lang="ts">
@@ -144,27 +163,51 @@ export default defineComponent({
     }
   },
   components: {
-    AlertMessage
+    AlertMessage,
   },
   data() {
     return {
-      celularNumber: '', 
       fullName: '', 
       email: '',
-      message: '',
+      celularNumber: '', 
       cep: '', 
       cepRua:'', 
       cepNumero: '',
-      cepBairro:'', 
       cepComplemento: '', 
+      cepBairro:'', 
       cepCidade:'', 
       cepEstado:'', 
+      instituicao: '', 
+      curso: '', 
+      dataInicio: '', 
+      dataFinal: '',
+      message: '',
     }
   },
   setup(props) {
     return { ...props, stepperRef, step, step1, step2, step3, AlertMessage, onBackStep };
   },
   computed: {
+    school() {
+      return [
+        (v:string) => !!v || 'A instituição é obrigatória',
+      ]
+    },
+    course() {
+      return [
+        (v:string) => !!v || 'O curso é obrigatória',
+      ]
+    },
+    validateDateIni() {
+      return [
+        (v:string) => !!v || 'A data inicial é obrigatória',
+      ]
+    },
+    validateDateFim() {
+      return [
+        (v:string) => !!v || 'A data final é obrigatória',
+      ]
+    },
     phoneRules() {
       return [
         (v:string) => /^\d{13}$/.test(removeAllChars(v)) || 'Número de celular inválido. Informe um número de 13 dígitos.',
@@ -216,6 +259,26 @@ export default defineComponent({
           }
           break;
         default:
+          const alertMsg = this.$refs.msgRef as typeof AlertMessage;
+          const msg = `
+          <br><b>Contato</b><br><br>
+          <b>Nome Completo</b>: ${this.fullName}<br>
+          <b>E-mai</b>l:${this.email}<br>
+          <b>Celular</b>: ${this.celularNumber}<br>
+          <br><b>Endereço</b><br><br>
+          <b>CEP</b>: ${this.cep}<br>
+          <b>Rua</b>: ${this.cepRua}<br>
+          <b>Número</b>: ${this.cepNumero}<br>
+          <b>Complemento</b>: ${this.cepComplemento}<br>
+          <b>Bairro</b>: ${this.cepBairro}<br>
+          <b>Cidade</b>: ${this.cepCidade}<br> 
+          <b>Estado</b>: ${this.cepEstado}<br> 
+          <br><b>Formação</b><br><br>
+          <b>Instituição</b>: ${this.instituicao}<br>
+          <b>Curso</b>: ${this.curso}<br>
+          <b>Data Inicial</b>: ${this.dataInicio}<br>
+          <b>Data Final</b>: ${this.dataFinal}.`
+          if (alertMsg) alertMsg.show('Dados Recebidos', 'check_circle', 'green', msg);
           break;
       }
     },
@@ -232,8 +295,9 @@ export default defineComponent({
         this.cepCidade = data.localidade;
         this.cepEstado = data.uf;
       } catch (error) {
-        const alertMsg = this.$refs.errorRef as typeof AlertMessage;
-        if (alertMsg) alertMsg.show('Erro', 'Ooops, o servidor retornou um erro. Tente novamente mais tarde.');
+        const alertMsg = this.$refs.msgRef as typeof AlertMessage;
+        const msg = 'Ooops, o servidor retornou um erro. Tente novamente mais tarde.'
+        if (alertMsg) alertMsg.show('Erro', 'error', 'red',  msg);
       }
     },
 
