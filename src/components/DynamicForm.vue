@@ -1,4 +1,5 @@
 <template>
+  <AlertMessage ref="errorRef"/>
   <h4><q-icon :name="icon" color="red"/>{{ title }}</h4>
   <div id="dynamicForm">
    <q-stepper
@@ -11,27 +12,26 @@
         title="Contato"
         :done="step > 1"
       >
-        <q-input
-          ref="name"
-          v-model="fullName"
-          label="*Nome Completo"
-          :rules="nameRules"
-          required
-        />
-        <q-input
-          ref="email"
-          v-model="email"
-          label="*E-mail"
-          :rules="emailRules"
-          required
-        />
-        <q-input
-          ref="celular"
-          v-model="celularNumber"
-          label="Celular"
-          mask="+## (##) # ####-####"
-          :rules="phoneRules"
-        />
+        <q-form ref="formStep1">
+          <q-input
+            v-model="fullName"
+            label="Nome Completo"
+            :rules="nameRules"
+            required
+          />
+          <q-input
+            v-model="email"
+            label="E-mail"
+            :rules="emailRules"
+            required
+          />
+          <q-input
+            v-model="celularNumber"
+            label="Celular"
+            mask="+## (##) # ####-####"
+            :rules="phoneRules"
+          />
+        </q-form>
       </q-step>
 
       <q-step
@@ -39,12 +39,46 @@
         title="Endereço"
         :done="step > 2"
       >
-        <q-input
-          ref="step2Ref"
-          v-model="step2"
-          label="Any char in [a, b, c]"
-          :rules="[(val) => ['a','b','c'].includes(val) || 'must be one of these characters: a, b, c']"
-        />
+        <q-form ref="formStep2" id="formStep2">
+          <q-input
+            v-model="cep"
+            label="CEP"
+            :rules="cepRules"
+            mask="#####-###"
+            v-on:blur="onGetAddress"
+            required
+          />
+          <q-input
+            v-model="cepRua"
+            label="Rua"
+            disable
+          />
+          <q-input
+            v-model="cepNumero"
+            label="Número"
+            :rules="numberRules"
+          />
+          <q-input
+            v-model="cepComplemento"
+            label="Complemento"
+          />
+          <q-input
+            v-model="cepBairro"
+            label="Bairro"
+            disable
+          />
+          <q-input
+            v-model="cepCidade"
+            label="Cidade"
+            disable
+          />
+          <q-input
+            v-model="cepEstado"
+            label="Uf"
+            disable
+          />
+          
+        </q-form>
       </q-step>
 
       <q-step
@@ -71,38 +105,18 @@
 
 <script lang="ts">
 import { defineComponent, ref, Ref} from 'vue';
+import { QForm } from 'quasar';
+import AlertMessage from './AlertMessage.vue';
 
 const stepperRef = ref<Ref | null>(null);
-const step1Ref = ref<Ref | null>(null);
-const step2Ref = ref<Ref | null>(null);
 const step = ref<number>(1);
 const step1 = ref<string>('');
 const step2 = ref<string>('');
 const step3 = ref<string>('');
 
-const onContinueStep = () => {
-  switch (step.value) {
-    case 1:
-      if (step1Ref.value) {
-          step1Ref.value.validate();
-        if (!step1Ref.value.hasError) {
-          if (stepperRef.value) stepperRef.value.next();
-        }
-      }
-      break;
-    case 2:
-      if (step2Ref.value) {
-        step2Ref.value.validate();
-        if (!step2Ref.value.hasError) {
-          if (stepperRef.value) stepperRef.value.next();
-        }
-      }
-      break;
-    default:
-      alert(`Valores recebidos: ${step1.value} - ${step2.value} - ${step3.value}`);
-      break;
-  }
-};
+const removeAllChars = (str:string):string => {
+  return str.replace(/\D/g, '')
+}
 
 const onBackStep = () => {
   if (stepperRef.value) stepperRef.value.previous();
@@ -129,25 +143,31 @@ export default defineComponent({
       required: true,
     }
   },
-  setup(props) {
-    return { ...props, stepperRef, step, step1, step2, step3, onContinueStep, onBackStep };
+  components: {
+    AlertMessage
   },
   data() {
     return {
       celularNumber: '', 
       fullName: '', 
       email: '',
-      fields: {
-        name: ref<Ref | null>(null),
-        celular: ref<Ref | null>(null),
-        email: ref<Ref | null>(null),
-      }
+      message: '',
+      cep: '', 
+      cepRua:'', 
+      cepNumero: '',
+      cepBairro:'', 
+      cepComplemento: '', 
+      cepCidade:'', 
+      cepEstado:'', 
     }
+  },
+  setup(props) {
+    return { ...props, stepperRef, step, step1, step2, step3, AlertMessage, onBackStep };
   },
   computed: {
     phoneRules() {
       return [
-        (v:string) => /^\d{13}$/.test(v.replace(/\D/g, '')) || 'Número de celular inválido. Informe um número de 13 dígitos.',
+        (v:string) => /^\d{13}$/.test(removeAllChars(v)) || 'Número de celular inválido. Informe um número de 13 dígitos.',
       ]
     }, 
     nameRules(){
@@ -162,8 +182,62 @@ export default defineComponent({
       return [
         (v:string) => (/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(v) || 'E-mail inválido.'
       ]
-    }
+    },
+    cepRules() {
+      return [
+        (v:string) => !!v || 'CEP é obrigatório',
+        (v:string) => /^\d{8}$/.test(removeAllChars(v)) || 'CEP inválido (digite 8 números)',
+      ];
+    },
+    numberRules() {
+      return [
+        (v:string) => !!v || 'O Número é obrigatório',
+        (v:string) => /^\d+$/.test(v) || 'Digite apenas números',
+      ];
+    },
   },
+  methods:{
+    async onContinueStep() {
+      switch (step.value) {
+        case 1:
+          const formStep1 = this.$refs['formStep1'] as QForm | undefined;
+          if (formStep1) {
+            if (await formStep1.validate()) {
+              if (stepperRef.value) stepperRef.value.next()
+            }
+          }
+          break;
+          case 2:
+          const formStep2 = this.$refs['formStep2'] as QForm | undefined;
+          if (formStep2) {
+            if (await formStep2.validate()) {
+              if (stepperRef.value) stepperRef.value.next()
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    },
+    async onGetAddress() {
+      try {
+        const str = removeAllChars(this.cep);
+        const response = await fetch(`https://viacep.com.br/ws/${str}/json/`);
+        const data = await response.json();
+
+        if (data.erro) throw new Error;
+        
+        this.cepRua = data.logradouro;
+        this.cepBairro = data.bairro;
+        this.cepCidade = data.localidade;
+        this.cepEstado = data.uf;
+      } catch (error) {
+        const alertMsg = this.$refs.errorRef as typeof AlertMessage;
+        if (alertMsg) alertMsg.show('Erro', 'Ooops, o servidor retornou um erro. Tente novamente mais tarde.');
+      }
+    },
+
+  }
 });
 </script>
 
@@ -181,9 +255,18 @@ export default defineComponent({
     &__nav
       display: flex
       justify-content: end
+      gap: 10px
 
   .q-input
     .q-field
       &__control
         color: red
+
+#formStep2
+  display: flex
+  justify-content: space-between
+  flex-direction: row
+  flex-wrap: wrap
+  .q-input
+    width: 33%
 </style>
