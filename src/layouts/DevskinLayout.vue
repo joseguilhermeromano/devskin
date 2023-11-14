@@ -111,8 +111,7 @@ export default {
         { icon: 'home', text: 'Início', to: '/inicio' },
         { icon: 'list', text: 'Tarefas' },
         { icon: 'dynamic_form', text: 'Formulário Dinâmico', to:'/formulario'},
-        { icon: 'apps', text: 'Postagens' },
-        { icon: 'message', text: 'Comentarios' },
+        { icon: 'apps', text: 'Painel/API', to:'/painel' },
       ],
 
       buttons1: [

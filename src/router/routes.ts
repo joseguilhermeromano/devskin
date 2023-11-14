@@ -8,6 +8,7 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/IndexPage.vue') },
       { path: '/inicio', component: () => import('pages/IndexPage2.vue') },
       { path: '/formulario', component: () => import('pages/DynamicForm.vue') },
+      { path: '/painel', component: () => import('pages/PanelApi.vue') },
     ],
   },
 
